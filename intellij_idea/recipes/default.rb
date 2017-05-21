@@ -49,18 +49,18 @@ when 'debian', 'ubuntu'
         action :run
     end
 
+    #   tricky way to load this Chef::Mixin::ShellOut utilities
+    #   [出典] http://stackoverflow.com/questions/29721575/how-to-get-a-linux-command-output-to-chef-attribute
+    #   TODO (意味がよくわかっていない)
+    Chef::Resource::RubyBlock.send(:include, Chef::Mixin::ShellOut)
+    user_name = "vagrant" # TODO ユーザ名指定ってどうやるの?
     # ユーザのホームディレクトリを絶対パスの文字列で得る.
     #   Mixlib::Shelloutを使って，ホストOSの環境に合わせたCLIでコマンドを実行した結果(標準出力)を得る.
     #   実行されるコマンド本体と，オプションとして実行するユーザを指定している.
     #   コマンドの実行結果として標準出力に出力された文字列は, .stdout で得られる.
     #   さらに，出力された文字列は末尾に改行文字を含んでいるため，string#chompにて改行コードを取り除く.
-    user_name = "vagrant" # TODO ユーザ名指定ってどうやるの?
-    user_home_dir = Mixlib::ShellOut.new("sudo -iu #{user_name} sh -c 'echo $HOME'").run_command.stdout.chomp
+    user_home_dir = shell_out("sudo -iu #{user_name} sh -c 'echo $HOME'").stdout.chomp
     # 以下は試行錯誤の跡. 
-    # tricky way to load this Chef::Mixin::ShellOut utilities
-    # [出典] http://stackoverflow.com/questions/29721575/how-to-get-a-linux-command-output-to-chef-attribute
-    # FIXME (意味はよくわかっていない)
-    # Chef::Resource::RubyBlock.send(:include, Chef::Mixin::ShellOut)
     # user_home_dir = Mixlib::ShellOut.new("echo ${HOME}", :user => "#{user_name}").run_command.stdout.chomp
     # user_home_dir = shell_out("echo $HOME", :user => "#{user_name}").stdout.chomp
 
